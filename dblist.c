@@ -29,9 +29,15 @@ int dblist_append(dblist_t *list, void *data) {
         return -1;
     dblist_next(newNode) = NULL;
     dblist_data(newNode) = data;
-    dblist_next(dblist_tail(list)) = newNode;
-    dblist_prev(newNode) = dblist_tail(list);
-    dblist_tail(list) = newNode;
+    if(dblist_head(list)==NULL){
+        dblist_head(list)=newNode;
+        dblist_tail(list)=newNode;
+        dblist_size(list)++;
+    }else{
+        dblist_next(dblist_tail(list)) = newNode;
+        dblist_prev(newNode) = dblist_tail(list);
+        dblist_tail(list) = newNode;
+    }
 
     return 0;
 }

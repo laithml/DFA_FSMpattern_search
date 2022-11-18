@@ -7,6 +7,10 @@
   */
 
 #include "dblist.h"
+#include <stdlib.h>
+#include <stdio.h>
+
+
 
 #ifndef PATTERN_MATCHING_H
 #define PATTERN_MATCHING_H
