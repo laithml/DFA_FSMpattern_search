@@ -10,6 +10,7 @@ int main() {
     for(int i=0;i<4;i++){
         pm_addstring(zeroState,pattern[i],strlen(pattern[i]));
     }
+    pm_makeFSM(zeroState);
 
     return 0;
 }

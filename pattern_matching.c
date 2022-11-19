@@ -18,6 +18,45 @@ int pm_init(pm_t *root){
     root->zerostate=zeroState;
     return 0;
 }
+
+int pm_makeFSM(pm_t *root){
+    pm_state_t *zeroState=root->zerostate;
+    dblist_node_t *head=dblist_head(zeroState->_transitions);
+    dblist_t *queue= malloc(sizeof(dblist_node_t));
+    dblist_init(queue);
+    while(head!=NULL){
+        dblist_append(queue,(pm_labeled_edge_t*) head);
+        printf("adding state to queue %d\n",((pm_state_t*) (((pm_labeled_edge_t *) dblist_data(head))->state))->id);
+        ((pm_labeled_edge_t*) dblist_data(head))->state->fail=zeroState;
+        head=head->next;
+    }
+
+    dblist_node_t *r=dblist_head(queue);
+    printf("current id %d\n",((pm_labeled_edge_t*)dblist_data(r))->state->id);
+    while(r!=NULL){
+        r=dblist_head(queue);
+        printf("current id %d\n",((pm_labeled_edge_t*)dblist_data(r))->state->id);
+        dblist_node_t *currNode=dblist_head((((pm_labeled_edge_t *) dblist_data(r))->state)->_transitions);
+        unsigned char currSymbol=((pm_labeled_edge_t*) dblist_data(currNode))->label;
+        while(currNode!=NULL){
+            dblist_append(queue,currNode);
+            pm_state_t *state=((pm_state_t*)dblist_data(r))->fail;
+            while(pm_goto_get(state,currSymbol)==NULL)state=state->fail;
+            state->fail=pm_goto_get(state,currSymbol);
+            printf("Setting f(%d) = %d\n",((pm_state_t*)dblist_data(r))->id,state->id);
+            dblist_node_t *tempF=dblist_head(state->fail->output);
+            while(tempF!=NULL){
+                dblist_append(state->output,tempF);
+                tempF=tempF->next;
+            }
+            currNode=currNode->next;
+        }
+        dblist_remove(queue,r,dblist_LEAVE_DATA);
+    }
+    return 0;
+}
+
+
 int pm_addstring(pm_t *root,unsigned char *string, size_t n){
     if(root==NULL){
         return -1;
