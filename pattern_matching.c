@@ -18,6 +18,7 @@ int pm_init(pm_t *root) {
     return 0;
 }
 
+
 int pm_makeFSM(pm_t *root) {
     pm_state_t *zeroState = root->zerostate;
     dblist_node_t *head = dblist_head(zeroState->_transitions);
@@ -37,21 +38,31 @@ int pm_makeFSM(pm_t *root) {
         dblist_node_t *headT=NULL;
         if (r->_transitions != NULL)
             headT = dblist_head(r->_transitions);//son
-            while (headT != NULL) {
-                pm_labeled_edge_t *edgeR = ((pm_labeled_edge_t *) dblist_data(headT));
-                dblist_append(queue, edgeR->state);
-                unsigned char currSymbol = edgeR->label;
-                pm_state_t *state = r->fail;
-                if(state!=root->zerostate) {
-                    while (pm_goto_get(state, currSymbol) == NULL) state = state->fail;
+        while (headT != NULL) {
+            pm_labeled_edge_t *edgeR = ((pm_labeled_edge_t *) dblist_data(headT));
+            dblist_append(queue, edgeR->state);
+            unsigned char currSymbol = edgeR->label;
+            pm_state_t *state =r->fail;
+            if(state!=NULL) {
+                while (pm_goto_get(state, currSymbol) == NULL) {
+                    if (state == root->zerostate){
+                        state = NULL;
+                        edgeR->state->fail=root->zerostate;
+                        break;
                 }
-                edgeR->state->fail = pm_goto_get(state, currSymbol);
-                printf("Setting f(%d) = %d\n", edgeR->state->id, edgeR->state->fail->id);
-                headT = headT->next;
+                    state = state->fail;
+                }if(state != NULL){
+                    edgeR->state->fail = pm_goto_get(state, currSymbol);
+                    printf("Setting f(%d) = %d\n", edgeR->state->id, edgeR->state->fail->id);
+                }
+            }else{
+                edgeR->state->fail=root->zerostate;
             }
 
-
+            headT = headT->next;
+        }
     }
+    free(queue);
     return 0;
 }
 
@@ -98,7 +109,7 @@ int pm_goto_set(pm_state_t *from_state, unsigned char symbol, pm_state_t *to_sta
     to_state->_transitions = NULL;
     to_state->fail = NULL;
     to_state->output = NULL;
-    printf("%d->%c->%d\n", from_state->id, symbol, to_state->id);
+    printf("%d -> %c -> %d\n", from_state->id, symbol, to_state->id);
     return 0;
 }
 
