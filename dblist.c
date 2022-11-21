@@ -59,10 +59,18 @@ int dblist_remove(dblist_t *to, dblist_node_t *pointer, dblist_destroy_t dealloc
     if (pointer == NULL)
         return -1;
 
-    if (dblist_next(pointer) == NULL && dblist_prev(pointer) == NULL) {
+    if(pointer==dblist_head(to)){
+        dblist_head(to)=dblist_next(pointer);
         if (dealloc == dblist_FREE_DATA)
             free(dblist_data(pointer));
         free(pointer);
+        pointer=NULL;
+    }
+    else if (dblist_next(pointer) == NULL && dblist_prev(pointer) == NULL) {
+        if (dealloc == dblist_FREE_DATA)
+            free(dblist_data(pointer));
+        free(pointer);
+        pointer=NULL;
     } else if (dblist_next(pointer) == NULL && dblist_prev(pointer) != NULL) {
         dblist_tail(to) = dblist_prev(pointer);
         dblist_next(dblist_prev(pointer)) = NULL;
@@ -70,6 +78,8 @@ int dblist_remove(dblist_t *to, dblist_node_t *pointer, dblist_destroy_t dealloc
         if (dealloc == dblist_FREE_DATA)
             free(dblist_data(pointer));
         free(pointer);
+        pointer=NULL;
+
     } else if (dblist_next(pointer) != NULL && dblist_prev(pointer) == NULL) {
         dblist_head(to) = dblist_next(pointer);
         dblist_prev(dblist_next(pointer)) = NULL;
@@ -77,6 +87,7 @@ int dblist_remove(dblist_t *to, dblist_node_t *pointer, dblist_destroy_t dealloc
         if (dealloc == dblist_FREE_DATA)
             free(dblist_data(pointer));
         free(pointer);
+        pointer=NULL;
     } else {
         dblist_node_t *prev = dblist_prev(pointer);
         dblist_node_t *next = dblist_next(pointer);
