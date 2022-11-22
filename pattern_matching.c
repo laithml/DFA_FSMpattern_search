@@ -7,9 +7,9 @@
 
 
 dblist_t* uni(dblist_t *l1,dblist_t *l2){
-    if(l1!=NULL)
+    if(l1==NULL)
         return l2;
-    if(l2!=NULL)
+    if(l2==NULL)
         return l1;
     dblist_node_t *temp=dblist_head(l2);
     while(temp!=NULL){
@@ -149,14 +149,14 @@ pm_state_t *pm_goto_get(pm_state_t *state, unsigned char symbol) {
     return NULL;
 }
 
-dblist_t* pm_fsm_search(pm_state_t *zerostate,unsigned char *string,size_t n){
+dblist_t* pm_fsm_search(pm_state_t *state,unsigned char *string,size_t n){
     dblist_t *matched_list= malloc(sizeof(dblist_t));
     dblist_init(matched_list);
     pm_state_t *currState;
 
     for(int i=0;i<n;i++){
-        currState= pm_goto_get(zerostate,string[i]);
-        pm_state_t *failState=zerostate;
+        currState= pm_goto_get(state,string[i]);
+        pm_state_t *failState=state;
         while(currState==NULL){
             if(failState->depth==0){
                 currState=failState;
@@ -168,7 +168,7 @@ dblist_t* pm_fsm_search(pm_state_t *zerostate,unsigned char *string,size_t n){
             currState= pm_goto_get(failState,string[i]);
         }
 
-        if(dblist_head(currState->output)!=NULL){
+        if(currState->output!=NULL){
             dblist_node_t *tempHead=dblist_head(currState->output);
             int j=0;
             while(tempHead!=NULL){
@@ -176,8 +176,8 @@ dblist_t* pm_fsm_search(pm_state_t *zerostate,unsigned char *string,size_t n){
                 if(newMatch==NULL)
                     return NULL;
                 newMatch->pattern=dblist_data(tempHead);
-                newMatch->start_pos=j -strlen(newMatch->pattern)+1;
-                newMatch->end_pos=j;
+                newMatch->start_pos=i -strlen(newMatch->pattern)+1;
+                newMatch->end_pos=i;
                 newMatch->fstate=currState;
                 dblist_append(matched_list,newMatch);
                 printf("pattern: %s ,start at: %d ,ends at: %d ,last state: %d\n",newMatch->pattern,newMatch->start_pos,newMatch->end_pos,currState->id);
@@ -185,7 +185,7 @@ dblist_t* pm_fsm_search(pm_state_t *zerostate,unsigned char *string,size_t n){
                 j++;
             }
         }
-        zerostate=currState;
+        state=currState;
     }
     return matched_list;
 }
