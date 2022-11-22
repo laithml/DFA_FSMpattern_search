@@ -66,7 +66,7 @@ void dblist_destroy(dblist_t *,dblist_destroy_t);
 int dblist_append(dblist_t *,void *);
 
 
-int dblist_append_list(dblist_t *,void *);
+
 
 /** Prepend data to list (add as first node of the list)
 	\param list - a pointer to list

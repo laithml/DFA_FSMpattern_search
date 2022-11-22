@@ -2,7 +2,22 @@
 // Created by Laith on 15/11/2022.
 //
 
+#include <string.h>
 #include "pattern_matching.h"
+
+
+dblist_t* uni(dblist_t *l1,dblist_t *l2){
+    if(l1!=NULL)
+        return l2;
+    if(l2!=NULL)
+        return l1;
+    dblist_node_t *temp=dblist_head(l2);
+    while(temp!=NULL){
+        dblist_append(l1,temp->data);
+        temp=dblist_next(temp);
+    }
+    return l1;
+}
 
 int pm_init(pm_t *root) {
     pm_state_t *zeroState = malloc(sizeof(pm_state_t));
@@ -53,6 +68,11 @@ int pm_makeFSM(pm_t *root) {
                     state = state->fail;
                 }if(state != NULL){
                     edgeR->state->fail = pm_goto_get(state, currSymbol);
+                    if(edgeR->state->output ==NULL){
+                        edgeR->state->output= malloc(sizeof(dblist_t));
+                        dblist_init( edgeR->state->output);
+                    }
+                        edgeR->state->output= uni(edgeR->state->output,edgeR->state->fail->output);
                     printf("Setting f(%d) = %d\n", edgeR->state->id, edgeR->state->fail->id);
                 }
             }else{
@@ -82,6 +102,9 @@ int pm_addstring(pm_t *root, unsigned char *string, size_t n) {
         }
         currState = nextState;
     }
+    currState->output= malloc(sizeof(dblist_t));
+    dblist_init(currState->output);
+    dblist_append(currState->output,string);
     return 0;
 }
 
@@ -124,4 +147,45 @@ pm_state_t *pm_goto_get(pm_state_t *state, unsigned char symbol) {
         curr = dblist_next(curr);
     }
     return NULL;
+}
+
+dblist_t* pm_fsm_search(pm_state_t *zerostate,unsigned char *string,size_t n){
+    dblist_t *matched_list= malloc(sizeof(dblist_t));
+    dblist_init(matched_list);
+    pm_state_t *currState;
+
+    for(int i=0;i<n;i++){
+        currState= pm_goto_get(zerostate,string[i]);
+        pm_state_t *failState=zerostate;
+        while(currState==NULL){
+            if(failState->depth==0){
+                currState=failState;
+                break;
+            }
+            failState=failState->fail;
+            if(failState==NULL)
+                return NULL;
+            currState= pm_goto_get(failState,string[i]);
+        }
+
+        if(dblist_head(currState->output)!=NULL){
+            dblist_node_t *tempHead=dblist_head(currState->output);
+            int j=0;
+            while(tempHead!=NULL){
+                pm_match_t *newMatch= malloc(sizeof(pm_match_t));
+                if(newMatch==NULL)
+                    return NULL;
+                newMatch->pattern=dblist_data(tempHead);
+                newMatch->start_pos=j -strlen(newMatch->pattern)+1;
+                newMatch->end_pos=j;
+                newMatch->fstate=currState;
+                dblist_append(matched_list,newMatch);
+                printf("pattern: %s ,start at: %d ,ends at: %d ,last state: %d\n",newMatch->pattern,newMatch->start_pos,newMatch->end_pos,currState->id);
+                tempHead=dblist_next(tempHead);
+                j++;
+            }
+        }
+        zerostate=currState;
+    }
+    return matched_list;
 }
