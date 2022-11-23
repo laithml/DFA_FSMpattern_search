@@ -8,6 +8,7 @@
 
 #ifndef dblist_H
 #define dblist_H
+#include <stdlib.h>
 
 //! The definition of a double linked list node
 struct dblist_node

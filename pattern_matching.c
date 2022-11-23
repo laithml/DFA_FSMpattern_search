@@ -20,7 +20,7 @@ dblist_t* uni(dblist_t *l1,dblist_t *l2){
 }
 
 int pm_init(pm_t *root) {
-    pm_state_t *zeroState = malloc(sizeof(pm_state_t));
+    pm_state_t *zeroState = calloc(1,sizeof(pm_state_t));
     if (root == NULL || zeroState == NULL)
         return -1;
     zeroState->id = 0;
@@ -37,7 +37,7 @@ int pm_init(pm_t *root) {
 int pm_makeFSM(pm_t *root) {
     pm_state_t *zeroState = root->zerostate;
     dblist_node_t *head = dblist_head(zeroState->_transitions);
-    dblist_t *queue = malloc(sizeof(dblist_node_t));
+    dblist_t *queue = calloc(1,sizeof(dblist_node_t));
     dblist_init(queue);
     while (head != NULL) {
         pm_labeled_edge_t *edge = (pm_labeled_edge_t *) dblist_data(head);
@@ -69,7 +69,7 @@ int pm_makeFSM(pm_t *root) {
                 }if(state != NULL){
                     edgeR->state->fail = pm_goto_get(state, currSymbol);
                     if(edgeR->state->output ==NULL){
-                        edgeR->state->output= malloc(sizeof(dblist_t));
+                        edgeR->state->output= calloc(1,sizeof(dblist_t));
                         dblist_init( edgeR->state->output);
                     }
                         edgeR->state->output= uni(edgeR->state->output,edgeR->state->fail->output);
@@ -96,13 +96,14 @@ int pm_addstring(pm_t *root, unsigned char *string, size_t n) {
     for (int i = 0; i < n; i++) {
         nextState = pm_goto_get(currState, string[i]);
         if (nextState == NULL) {
-            nextState = malloc(sizeof(pm_state_t));
+            nextState = calloc(1,sizeof(pm_state_t));
+            printf("Allocating state %d\n", root->newstate+1);
             nextState->id = ++(root->newstate);
             pm_goto_set(currState, string[i], nextState);
         }
         currState = nextState;
     }
-    currState->output= malloc(sizeof(dblist_t));
+    currState->output= calloc(1,sizeof(dblist_t));
     dblist_init(currState->output);
     dblist_append(currState->output,string);
     return 0;
@@ -116,16 +117,16 @@ int pm_goto_set(pm_state_t *from_state, unsigned char symbol, pm_state_t *to_sta
         return 0;
 
     if (from_state->_transitions == NULL) {
-        from_state->_transitions = malloc(sizeof(dblist_t));
+        from_state->_transitions = calloc(1,sizeof(dblist_t));
         dblist_init(from_state->_transitions);
     }
 
     pm_int_t newDepth = (from_state->depth) + 1;
     to_state->depth = newDepth;
-    pm_labeled_edge_t *newEdge = malloc(sizeof(pm_labeled_edge_t));
+    pm_labeled_edge_t *newEdge = calloc(1,sizeof(pm_labeled_edge_t));
     if (newEdge == NULL || to_state == NULL)
         return -1;
-    printf("Allocating state %d\n", to_state->id);
+
     newEdge->state = to_state;
     newEdge->label = symbol;
     dblist_append(from_state->_transitions, newEdge);
@@ -150,7 +151,7 @@ pm_state_t *pm_goto_get(pm_state_t *state, unsigned char symbol) {
 }
 
 dblist_t* pm_fsm_search(pm_state_t *state,unsigned char *string,size_t n){
-    dblist_t *matched_list= malloc(sizeof(dblist_t));
+    dblist_t *matched_list= calloc(1,sizeof(dblist_t));
     dblist_init(matched_list);
     pm_state_t *currState;
 
@@ -172,15 +173,14 @@ dblist_t* pm_fsm_search(pm_state_t *state,unsigned char *string,size_t n){
             dblist_node_t *tempHead=dblist_head(currState->output);
             int j=0;
             while(tempHead!=NULL){
-                pm_match_t *newMatch= malloc(sizeof(pm_match_t));
+                pm_match_t *newMatch= calloc(1,sizeof(pm_match_t));
                 if(newMatch==NULL)
                     return NULL;
                 newMatch->pattern=dblist_data(tempHead);
-                newMatch->start_pos=i -strlen(newMatch->pattern)+1;
+                newMatch->start_pos=i - (int)strlen(newMatch->pattern)+1;
                 newMatch->end_pos=i;
                 newMatch->fstate=currState;
                 dblist_append(matched_list,newMatch);
-                printf("pattern: %s ,start at: %d ,ends at: %d ,last state: %d\n",newMatch->pattern,newMatch->start_pos,newMatch->end_pos,currState->id);
                 tempHead=dblist_next(tempHead);
                 j++;
             }
@@ -188,4 +188,37 @@ dblist_t* pm_fsm_search(pm_state_t *state,unsigned char *string,size_t n){
         state=currState;
     }
     return matched_list;
+}
+
+void rec_destroy(pm_state_t *state){
+    if(state->_transitions==NULL){
+        if (state->output != NULL) {
+            dblist_destroy(state->output, dblist_LEAVE_DATA);
+            free(state->output);
+        }
+        free(state);
+    }else {
+        dblist_node_t *curr = dblist_head(state->_transitions);
+
+        while (curr != NULL) {
+            rec_destroy(((pm_labeled_edge_t *) dblist_data(curr))->state);
+            curr = dblist_next(curr);
+        }
+        if (state->output != NULL) {
+            dblist_destroy(state->output, dblist_LEAVE_DATA);
+            free(state->output);
+        }
+
+        dblist_destroy(state->_transitions, dblist_FREE_DATA);
+        free(state->_transitions);
+        free(state);
+    }
+}
+
+void pm_destroy(pm_t *pm){
+    if(pm==NULL||pm->zerostate== NULL)
+        return;
+    rec_destroy(pm->zerostate);
+    free(pm);
+
 }

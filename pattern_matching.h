@@ -6,14 +6,14 @@
     
   */
 
-#include "dblist.h"
-#include <stdlib.h>
-#include <stdio.h>
-
 
 
 #ifndef PATTERN_MATCHING_H
 #define PATTERN_MATCHING_H
+#include "dblist.h"
+#include <stdlib.h>
+#include <stdio.h>
+
 
 typedef unsigned int pm_int_t;
 

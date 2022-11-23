@@ -1,7 +1,8 @@
 //
 // Created by Laith on 14/11/2022.
 //
-#include <stdlib.h>
+
+#include <stdio.h>
 #include "dblist.h"
 
 void dblist_init(dblist_t *list) {
@@ -11,20 +12,22 @@ void dblist_init(dblist_t *list) {
 }
 
 void dblist_destroy(dblist_t *list, dblist_destroy_t dealloc) {
+    if(list==NULL||dblist_head(list)==NULL) return;
     dblist_node_t *curr = dblist_head(list);
     dblist_node_t *temp;
-    while (dblist_next(curr) != NULL) {
+    while (curr != NULL) {
         if (dealloc == dblist_FREE_DATA)
             free(dblist_data(curr));
         temp = dblist_next(curr);
         free(curr);
         curr = temp;
     }
+
     list = NULL;
 }
 
 int dblist_append(dblist_t *list, void *data) {
-    dblist_node_t *newNode = malloc(sizeof(dblist_node_t));
+    dblist_node_t *newNode = calloc(1,sizeof(dblist_node_t));
     if (newNode == NULL)
         return -1;
     dblist_next(newNode) = NULL;
@@ -42,8 +45,10 @@ int dblist_append(dblist_t *list, void *data) {
     return 0;
 }
 
+
+
 int dblist_prepend(dblist_t *list, void *data) {
-    dblist_node_t *newNode = malloc(sizeof(dblist_node_t));
+    dblist_node_t *newNode = calloc(1,sizeof(dblist_node_t));
     if (newNode == NULL)
         return -1;
     dblist_prev(newNode) = NULL;
