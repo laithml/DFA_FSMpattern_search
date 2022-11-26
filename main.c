@@ -11,6 +11,8 @@ int main() {
         pm_addstring(pm,pattern[i],strlen(pattern[i]));
     }
     pm_makeFSM(pm);
+    dblist_t *dblist=pm_fsm_search(pm->zerostate,text, strlen(text));
+    free(dblist);
     pm_destroy(pm);
     return 0;
 }

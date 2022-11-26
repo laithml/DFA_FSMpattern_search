@@ -21,7 +21,11 @@ dblist_t* uni(dblist_t *l1,dblist_t *l2){
 
 int pm_init(pm_t *root) {
     pm_state_t *zeroState = calloc(1,sizeof(pm_state_t));
-    if (root == NULL || zeroState == NULL)
+    if( zeroState == NULL){
+        pm_destroy(root);
+        return -1;
+    }
+    if (root == NULL )
         return -1;
     zeroState->id = 0;
     zeroState->depth = 0;
@@ -38,6 +42,11 @@ int pm_makeFSM(pm_t *root) {
     pm_state_t *zeroState = root->zerostate;
     dblist_node_t *head = dblist_head(zeroState->_transitions);
     dblist_t *queue = calloc(1,sizeof(dblist_node_t));
+    if( queue == NULL ){
+        pm_destroy(root);
+        return -1;
+    }
+
     dblist_init(queue);
     while (head != NULL) {
         pm_labeled_edge_t *edge = (pm_labeled_edge_t *) dblist_data(head);
@@ -70,6 +79,10 @@ int pm_makeFSM(pm_t *root) {
                     edgeR->state->fail = pm_goto_get(state, currSymbol);
                     if(edgeR->state->output ==NULL){
                         edgeR->state->output= calloc(1,sizeof(dblist_t));
+                        if(edgeR->state->output == NULL){
+                            pm_destroy(root);
+                            return -1;
+                        }
                         dblist_init( edgeR->state->output);
                     }
                         edgeR->state->output= uni(edgeR->state->output,edgeR->state->fail->output);
@@ -97,14 +110,20 @@ int pm_addstring(pm_t *root, unsigned char *string, size_t n) {
         nextState = pm_goto_get(currState, string[i]);
         if (nextState == NULL) {
             nextState = calloc(1,sizeof(pm_state_t));
-            printf("Allocating state %d\n", root->newstate+1);
+            if( nextState == NULL){
+                pm_destroy(root);
+                return -1;
+            }printf("Allocating state %d\n", root->newstate+1);
             nextState->id = ++(root->newstate);
             pm_goto_set(currState, string[i], nextState);
         }
         currState = nextState;
     }
     currState->output= calloc(1,sizeof(dblist_t));
-    dblist_init(currState->output);
+    if( currState->output == NULL) {
+        pm_destroy(root);
+        return -1;
+    }dblist_init(currState->output);
     dblist_append(currState->output,string);
     return 0;
 }
@@ -118,7 +137,10 @@ int pm_goto_set(pm_state_t *from_state, unsigned char symbol, pm_state_t *to_sta
 
     if (from_state->_transitions == NULL) {
         from_state->_transitions = calloc(1,sizeof(dblist_t));
-        dblist_init(from_state->_transitions);
+        if( from_state->_transitions == NULL) {
+            return -1;
+        }
+            dblist_init(from_state->_transitions);
     }
 
     pm_int_t newDepth = (from_state->depth) + 1;
@@ -152,6 +174,9 @@ pm_state_t *pm_goto_get(pm_state_t *state, unsigned char symbol) {
 
 dblist_t* pm_fsm_search(pm_state_t *state,unsigned char *string,size_t n){
     dblist_t *matched_list= calloc(1,sizeof(dblist_t));
+    if(matched_list == NULL){
+        return NULL;
+    }
     dblist_init(matched_list);
     pm_state_t *currState;
 
