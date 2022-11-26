@@ -171,7 +171,6 @@ dblist_t* pm_fsm_search(pm_state_t *state,unsigned char *string,size_t n){
 
         if(currState->output!=NULL){
             dblist_node_t *tempHead=dblist_head(currState->output);
-            int j=0;
             while(tempHead!=NULL){
                 pm_match_t *newMatch= calloc(1,sizeof(pm_match_t));
                 if(newMatch==NULL)
@@ -182,7 +181,6 @@ dblist_t* pm_fsm_search(pm_state_t *state,unsigned char *string,size_t n){
                 newMatch->fstate=currState;
                 dblist_append(matched_list,newMatch);
                 tempHead=dblist_next(tempHead);
-                j++;
             }
         }
         state=currState;
