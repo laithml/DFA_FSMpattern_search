@@ -1,6 +1,6 @@
-Pattern-Matching
-Authored by Laith Al-Muhtaseb
-211353297
+ID: 211353297
+Authored by Laith Al-Muhtaseb 211353297
+EX1 – String Pattern Matching Algorithm
 
 ==Description==
 This program made to match strings using FSM and DFA algorithms, first the program build a tree of the patterns,
@@ -27,6 +27,22 @@ from pm_labeled_edge_t type,the pointer of state is to_state and the label is th
 
 pm_goto_get: input a state and a symbol, pass at transitions list and search inside the node data (pm_labeled_edge_t)
 if the symbol equal the label, return the state that the label point at,else return null.
+
+uni: union two double lists to one.
+
+rec_destroy: recursion node by node from down to up free all allocated memory.
+
+pm_destroy: call for rec_destroy.
+
+pm_makeFSM: start from the root, set failure state of all the first level state to zeroState, and insert them to a queue,
+then start pop one by one from a queue, and add the transitions states to the queue, first look at the failure state of the state that popped from the queue,
+and check if there a same symbol that point to the transition state, so put the failure state to this state,
+using goto_get to get back if there's a failure.
+
+pm_fsm_search: allocate a list of pm_match_t struct, start from the state that came as input, and run on the string,
+if there's a match between the string at the index and the state transition label,if we reach a leaf node check the output list,
+if we found a match fill the data inside the pm_match_t struct and add it to the list,while there's no match between the symbol,
+we go back to failure state, in the end we return the list of pm_match_t struct.
 
 
 

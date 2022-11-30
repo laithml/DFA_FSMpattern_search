@@ -4,7 +4,7 @@
 #include "pattern_matching.h"
 #include <string.h>
 #include <stdlib.h>
-#include <printf.h>
+#include <stdio.h>
 
 
 void rec_destroy(pm_state_t *state){

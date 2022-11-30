@@ -13,6 +13,7 @@ int main() {
     }
     pm_makeFSM(pm);
     dbllist_t *dblist=pm_fsm_search(pm->zerostate,text, strlen(text));
+    dbllist_destroy(dblist,DBLLIST_FREE_DATA);
     free(dblist);
     pm_destroy(pm);
     return 0;
