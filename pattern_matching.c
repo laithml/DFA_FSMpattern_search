@@ -252,7 +252,6 @@ dbllist_t* pm_fsm_search(pm_state_t *state,unsigned char *string,_size_t n){
                 newMatch->start_pos=i - (int)strlen(newMatch->pattern)+1;
                 newMatch->end_pos=i;
                 newMatch->fstate=currState;
-                printf("pattern: %s , start at: %d, final state: %d\n",newMatch->pattern,newMatch->start_pos,newMatch->fstate->id);
                 if(dbllist_append(matched_list,newMatch)==-1){
                     rec_destroy(state);
                     return NULL;

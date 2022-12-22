@@ -13,9 +13,16 @@ void dbllist_init(dbllist_t *list) {
 }
 
 void dbllist_destroy(dbllist_t *list, dbllist_destroy_t dealloc) {
-    if(list==NULL||dbllist_head(list)==NULL) return;
+    if(list==NULL)
+        return;
+    if(dbllist_head(list)==NULL) {
+        free(list);
+        list=NULL;
+        return;
+    }
     dbllist_node_t *curr = dbllist_head(list);
     dbllist_node_t *temp;
+
     while (curr != NULL) {
         if (dealloc == DBLLIST_FREE_DATA)
             free(dbllist_data(curr));
@@ -23,7 +30,7 @@ void dbllist_destroy(dbllist_t *list, dbllist_destroy_t dealloc) {
         free(curr);
         curr = temp;
     }
-
+    free(list);
     list = NULL;
 }
 
@@ -32,16 +39,18 @@ int dbllist_append(dbllist_t *list, void *data) {
     if (newNode == NULL)
         return -1;
     dbllist_next(newNode) = NULL;
+    dbllist_prev(newNode)=NULL;
     dbllist_data(newNode) = data;
     if(dbllist_head(list)==NULL){
         dbllist_head(list)=newNode;
         dbllist_tail(list)=newNode;
-        dbllist_size(list)++;
     }else{
         dbllist_next(dbllist_tail(list)) = newNode;
         dbllist_prev(newNode) = dbllist_tail(list);
         dbllist_tail(list) = newNode;
     }
+    dbllist_size(list)++;
+
 
     return 0;
 }
@@ -50,13 +59,19 @@ int dbllist_append(dbllist_t *list, void *data) {
 
 int dbllist_prepend(dbllist_t *list, void *data) {
     dbllist_node_t *newNode = calloc(1,sizeof(dbllist_node_t));
-    if (newNode == NULL)
+    if (newNode == NULL || list== NULL)
         return -1;
     dbllist_prev(newNode) = NULL;
     dbllist_data(newNode) = data;
-    dbllist_prev(dbllist_head(list)) = newNode;
-    dbllist_next(newNode) = dbllist_head(list);
+    if(dbllist_head(list)==NULL){
+        dbllist_next(newNode) =NULL;
+        dbllist_tail(list) = newNode;
+    }else {
+        dbllist_prev(dbllist_head(list)) = newNode;
+        dbllist_next(newNode) = dbllist_head(list);
+    }
     dbllist_head(list) = newNode;
+    dbllist_size(list)++;
     return 0;
 }
 
@@ -67,22 +82,28 @@ int dbllist_remove(dbllist_t *to, dbllist_node_t *pointer, dbllist_destroy_t dea
 
     if(pointer==dbllist_head(to)){
         dbllist_head(to)=dbllist_next(pointer);
-        if (dealloc == DBLLIST_FREE_DATA)
+        if (dealloc == DBLLIST_FREE_DATA){
             free(dbllist_data(pointer));
+            dbllist_data(pointer)=NULL;
+        }
         free(pointer);
         pointer=NULL;
     }
     else if (dbllist_next(pointer) == NULL && dbllist_prev(pointer) == NULL) {
-        if (dealloc == DBLLIST_FREE_DATA)
+        if (dealloc == DBLLIST_FREE_DATA){
             free(dbllist_data(pointer));
+            dbllist_data(pointer)=NULL;
+        }
         free(pointer);
         pointer=NULL;
     } else if (dbllist_next(pointer) == NULL && dbllist_prev(pointer) != NULL) {
         dbllist_tail(to) = dbllist_prev(pointer);
         dbllist_next(dbllist_prev(pointer)) = NULL;
         dbllist_prev(pointer) = NULL;
-        if (dealloc == DBLLIST_FREE_DATA)
+        if (dealloc == DBLLIST_FREE_DATA){
             free(dbllist_data(pointer));
+            dbllist_data(pointer)=NULL;
+        }
         free(pointer);
         pointer=NULL;
 
@@ -90,8 +111,10 @@ int dbllist_remove(dbllist_t *to, dbllist_node_t *pointer, dbllist_destroy_t dea
         dbllist_head(to) = dbllist_next(pointer);
         dbllist_prev(dbllist_next(pointer)) = NULL;
         dbllist_next(pointer) = NULL;
-        if (dealloc == DBLLIST_FREE_DATA)
+        if (dealloc == DBLLIST_FREE_DATA){
             free(dbllist_data(pointer));
+            dbllist_data(pointer)=NULL;
+        }
         free(pointer);
         pointer=NULL;
     } else {
@@ -99,8 +122,10 @@ int dbllist_remove(dbllist_t *to, dbllist_node_t *pointer, dbllist_destroy_t dea
         dbllist_node_t *next = dbllist_next(pointer);
         dbllist_next(prev) = dbllist_next(pointer);
         dbllist_prev(next) = dbllist_prev(pointer);
-        if (dealloc == DBLLIST_FREE_DATA)
+        if (dealloc == DBLLIST_FREE_DATA){
             free(dbllist_data(pointer));
+            dbllist_data(pointer)=NULL;
+        }
         free(pointer);
         pointer = NULL;
     }
