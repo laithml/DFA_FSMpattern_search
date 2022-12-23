@@ -16,8 +16,6 @@ void dbllist_destroy(dbllist_t *list, dbllist_destroy_t dealloc) {
     if(list==NULL)
         return;
     if(dbllist_head(list)==NULL) {
-        free(list);
-        list=NULL;
         return;
     }
     dbllist_node_t *curr = dbllist_head(list);
@@ -30,8 +28,6 @@ void dbllist_destroy(dbllist_t *list, dbllist_destroy_t dealloc) {
         free(curr);
         curr = temp;
     }
-    free(list);
-    list = NULL;
 }
 
 int dbllist_append(dbllist_t *list, void *data) {

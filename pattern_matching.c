@@ -270,6 +270,6 @@ void pm_destroy(pm_t *pm){
     if(pm==NULL||pm->zerostate== NULL)
         return;
     rec_destroy(pm->zerostate);
-    free(pm);
 
 }
+
