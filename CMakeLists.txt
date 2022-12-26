@@ -3,4 +3,4 @@ project(ex1 C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(ex1 main.c slist.h pattern_matching.h slist.c pattern_matching.c)
+add_executable(ex1 slist.h pattern_matching.h slist.c pattern_matching.c main.c)
